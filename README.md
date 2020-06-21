@@ -1733,6 +1733,41 @@ export default TodoPublicListSubscription;
 
 ## Sync new todos
 
+Once a new todo is entered in a public list, it needs to appear in the UI. Instead of automatically displaying the todo in the UI, we use a Feed like Notification banner which appears whenever a new todo is received.
+
+Remember that previously we updated the cache using the cache API and the UI got updated automatically, because updating the cache triggered a re-render for those components that were subscribed to this store.
+
+We are not going to use that approach here since we don't want public list UI to be automatically updated.
+
+In the `TodoPublicListSubscription` component of the previous step, we only get the latest todo and not the existing list. We will now write a simple query to fetch the list of existing public todos.
+
+Start off by importing `useEffect` from `react` and `useApolloClient` from `@apollo/react-hooks`:
+
+```js
+import React, { Fragment, useState, useEffect } from "react";
+import { useSubscription, useApolloClient } from "@apollo/react-hooks";
+```
+
+Now that we have access to the client, let's update the `TodoPublicList` component.
+
+Let's populate initial state by fetching the existing list of todos in `useEffect`.
+
+Update the `loadOlder` method.
+
+We are defining a query to fetch older public todos and making a `client.query` call to get the data from the database. Once we get the data, we update the `todos` state to re-render the UI with the available list of public todos.
+
+Try adding a new todo in the public feed and notice that it will not show up on the UI. Now refresh the page to see the added todo.
+
+This happens because we haven't yet implemented a way to show the newly added todo to the feed.
+
+Let's handle that in `useEffect` for on update.
+
+Now try adding a new todo to the public feed and you will see the notification appearing saying that a new task has arrived.
+
+Great! We still have one functionality left. When a new task arrives on the public feed and when the user clicks on the New tasks section, we should make a query to re-fetch the todos that are not present on our current public feed.
+
+Update loadNew() method.
+
 # Deployment
 
 # What next?
