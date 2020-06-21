@@ -1152,6 +1152,32 @@ Let's get started!
 
 ## Create todos - mutation
 
+In this part of the tutorial, you will learn how to create new todos by using GraphQL Mutations.
+
+Let's define a graphql mutation to perform insert into todos:
+
+```gql
+mutation($todo: String!, $isPublic: Boolean!) {
+  insert_todos(objects: { title: $todo, is_public: $isPublic }) {
+    affected_rows
+    returning {
+      id
+      title
+      created_at
+      is_completed
+    }
+  }
+}
+```
+
+You will also need to pass in the values for the variables.
+
+Try this mutation in GraphiQL against the application database to see what the response looks like.
+
+NOTE: I had to temporarily make the `user_id` column nullable for this example to work.
+
+Let's now integrate this graphql mutation into our app.
+
 ## Query Variables
 
 ## useMutation Hook, Update Cache
