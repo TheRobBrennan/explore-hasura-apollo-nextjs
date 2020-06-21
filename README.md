@@ -443,6 +443,55 @@ Now that you're comfortable with the basics of using GraphQL, let's start integr
 
 # Hasura Backend Setup
 
+The first step in the tutorial is to setup the backend with Hasura and create the necessary data models.
+
+## Setup GraphQL Backend with Hasura
+
+Let's start by deploying Hasura.
+
+### One-click deployment on Heroku
+
+The fastest way to try Hasura out is via Heroku.
+
+Click [here](https://heroku.com/deploy?template=https://github.com/hasura/graphql-engine-heroku) to deploy GraphQL Engine on Heroku with the free Postgres add-on
+
+This will deploy Hasura GraphQL Engine on Heroku. A PostgreSQL database will be automatically provisioned along with Hasura. If you don’t have an account on Heroku, you would be required to sign up. Note: It is free to signup and no credit-card is required.
+
+Type in the app name (e.g. `explore-hasura-apollo-nextjs` for this guide), select the region of choice and click on Deploy app button.
+
+## Hasura Console
+
+Once the app has been deployed, you can visit it at [https://explore-hasura-apollo-nextjs.herokuapp.com/console](https://explore-hasura-apollo-nextjs.herokuapp.com/console) - where `explore-hasura-apollo-nextjs` is replaced with the app name you provided in the step above.
+
+## Apply database migrations
+
+Let's get started by creating the tables and relationships for the Realtime todo app.
+
+Download the hasura project with migrations from [here](https://hasura.io/learn/graphql/nextjs-fullstack-serverless/hasura.zip)
+
+First, let's make sure that we have installed our dependencies for this project:
+
+```sh
+$ npm install
+```
+
+Configure the endpoint to point to the heroku app URL. Open the `hasura/config.yaml` file and set the endpoint value:
+
+```yml
+endpoint: https://explore-hasura-apollo-nextjs.herokuapp.com
+```
+
+Now let's apply the migrations:
+
+```sh
+$ cd hasura/
+$ npx hasura migrate apply
+```
+
+This will create the tables and relationships for the slack app.
+
+Great! Now navigate to the heroku app - [https://explore-hasura-apollo-nextjs.herokuapp.com](https://explore-hasura-apollo-nextjs.herokuapp.com) for my example - to access the Hasura console.
+
 # Auth0 Setup
 
 ## Custom Claims in Auth0 Rules
