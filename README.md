@@ -1674,6 +1674,63 @@ In this section, you will:
 
 ## Fetch public todos - subscription
 
+Let's define the graphql query to be used:
+
+Open components `/Todo/TodoPublicList.js` and add the following imports:
+
+```js
+import gql from "graphql-tag";
+```
+
+Now let's define the subscription query to get notified about new public todos:
+
+```js
+// Run a subscription to get the latest public todo
+const NOTIFY_NEW_PUBLIC_TODOS = gql`
+  subscription notifyNewPublicTodos {
+    todos(
+      where: { is_public: { _eq: true } }
+      limit: 1
+      order_by: { created_at: desc }
+    ) {
+      id
+      created_at
+    }
+  }
+`;
+```
+
+Also lets add a functional component which uses this subscription query. Import `useSubscription` from `@apollo/react-hooks` to get started and then add:
+
+```js
+const TodoPublicListSubscription = () => {
+  const { loading, error, data } = useSubscription(NOTIFY_NEW_PUBLIC_TODOS);
+  if (loading) {
+    return <span>Loading...</span>;
+  }
+  if (error) {
+    return <span>Error</span>;
+  }
+  return {};
+};
+```
+
+### What does the subscription do?
+
+The query fetches `todos` with a simple condition; `is_public` must be true. We also limit the number of todos to `1`, since we would just like to get notified whenever a new todo comes in. We sort the todos by its latest `created_at` time according to the schema. We specify which fields we need for the todos node.
+
+Right now we don't return anything when new data comes in. We already have the TodoPublicList component which renders the list of public todos. So let's return that component:
+
+```js
+return (<TodoPublicList latestTodo={data.todos.length ? data.todos[0] : null} />
+```
+
+We would like to now return the new TodoPublicListSubscription component which has the `useSubscription` React hook integrated:
+
+```js
+export default TodoPublicListSubscription;
+```
+
 ## Sync new todos
 
 # Deployment
