@@ -1396,6 +1396,60 @@ const TOGGLE_TODO = gql`
 
 ### Apollo useMutation React Hook
 
+We need to use `useMutation` React hook to make the mutation:
+
+```js
+import { useMutation } from "@apollo/react-hooks";
+```
+
+We already have the onChange handler toggleTodo for the input. Let's update the function to make a use of `toggleTodoMutation` mutate function.
+
+```js
+const [toggleTodoMutation] = useMutation(TOGGLE_TODO);
+const toggleTodo = () => {
+  toggleTodoMutation({
+    variables: { id: todo.id, isCompleted: !todo.is_completed },
+    optimisticResponse: true,
+  });
+};
+```
+
+The above code will just make a mutation, updating the todo's is_completed property in the database. To update the cache, we will be using the `update` function again to modify the cache. We need to fetch the current list of todos from the cache before modifying it. So let's import the query:
+
+```js
+import { GET_MY_TODOS } from "./TodoPrivateList";
+```
+
+Now let's add the code for update function:
+
+```js
+const [toggleTodoMutation] = useMutation(TOGGLE_TODO);
+const toggleTodo = () => {
+  toggleTodoMutation({
+    variables: { id: todo.id, isCompleted: !todo.is_completed },
+    optimisticResponse: true,
+    update: (cache) => {
+      const existingTodos = cache.readQuery({ query: GET_MY_TODOS });
+      const newTodos = existingTodos.todos.map((t) => {
+        if (t.id === todo.id) {
+          return { ...t, is_completed: !t.is_completed };
+        } else {
+          return t;
+        }
+      });
+      cache.writeQuery({
+        query: GET_MY_TODOS,
+        data: { todos: newTodos },
+      });
+    },
+  });
+};
+```
+
+We are fetching the existing todos from the cache using `cache.readQuery` and updating the `is_completed` value for the todo that has been updated.
+
+Finally we are writing the updated todo list to the cache using `cache.writeQuery`.
+
 ## Remove todos - mutation
 
 ## Mutation and update cache
