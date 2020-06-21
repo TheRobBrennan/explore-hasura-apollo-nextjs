@@ -935,6 +935,14 @@ That's it. Our Next.js app is now configured with Apollo Client to talk to Hasur
 
 # Queries
 
+Let's integrate a GraphQL query to show the user their personal task list. We will learn the following concepts:
+
+- Fetching data with queries
+- Using the `useQuery` hook
+- Handle loading/error state
+
+Let's get started!
+
 ## Fetch todos - query
 
 ## useQuery hook
