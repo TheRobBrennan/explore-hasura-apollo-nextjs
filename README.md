@@ -1373,6 +1373,29 @@ Let's now integrate this graphql mutation into our app.
 
 ## Mutation and update cache
 
+Now let's do the integration part. Open `components/Todo/TodoItem.js` and add the following code below the other imports:
+
+```js
+import gql from "graphql-tag";
+```
+
+Let's define the graphql mutation to update the completed status of the todo:
+
+```js
+const TOGGLE_TODO = gql`
+  mutation toggleTodo($id: Int!, $isCompleted: Boolean!) {
+    update_todos(
+      where: { id: { _eq: $id } }
+      _set: { is_completed: $isCompleted }
+    ) {
+      affected_rows
+    }
+  }
+`;
+```
+
+### Apollo useMutation React Hook
+
 ## Remove todos - mutation
 
 ## Mutation and update cache

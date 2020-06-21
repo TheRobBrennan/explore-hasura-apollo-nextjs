@@ -1,10 +1,22 @@
 import React from "react";
+import gql from "graphql-tag";
 
 const TodoItem = ({ index, todo }) => {
-  const removeTodo = e => {
+  const removeTodo = (e) => {
     e.preventDefault();
     e.stopPropagation();
   };
+
+  const TOGGLE_TODO = gql`
+    mutation toggleTodo($id: Int!, $isCompleted: Boolean!) {
+      update_todos(
+        where: { id: { _eq: $id } }
+        _set: { is_completed: $isCompleted }
+      ) {
+        affected_rows
+      }
+    }
+  `;
 
   const toggleTodo = () => {};
 
