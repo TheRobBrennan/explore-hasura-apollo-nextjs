@@ -1,20 +1,21 @@
-import Header from '../components/Header'
+import Header from "../components/Header";
 import Login from "../components/Auth/Login";
 import TodoPrivateWrapper from "../components/Todo/TodoPrivateWrapper";
 import TodoPublicWrapper from "../components/Todo/TodoPublicWrapper";
 import OnlineUsersWrapper from "../components/OnlineUsers/OnlineUsersWrapper";
 
-import { useFetchUser } from '../lib/user'
+import { useFetchUser } from "../lib/user";
+import { withApollo } from "../lib/withApollo";
 
-const IndexPage = () => { 
-  const { user, loading } = useFetchUser()
-  if(loading) {
-    return <div>Loading...</div>
+const IndexPage = () => {
+  const { user, loading } = useFetchUser();
+  if (loading) {
+    return <div>Loading...</div>;
   }
   if (!loading && !user) {
-    return <Login />
+    return <Login />;
   }
-  return(
+  return (
     <div>
       <Header />
       <div className="row container-fluid p-left-right-0 m-left-right-0">
@@ -33,7 +34,7 @@ const IndexPage = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default IndexPage
+export default withApollo()(IndexPage);
