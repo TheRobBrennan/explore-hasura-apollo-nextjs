@@ -1528,6 +1528,41 @@ Let's now integrate this graphql mutation into our app.
 
 ## Mutation and update cache
 
+Open components `/Todo/TodoPrivateList.js` and import `useMutation` React hook and add the bulk delete mutation:
+
+```js
+import { useQuery, useMutation } from "@apollo/react-hooks";
+
+// Remove all the todos that are completed
+export const CLEAR_COMPLETED = gql`
+  mutation clearCompleted {
+    delete_todos(
+      where: { is_completed: { _eq: true }, is_public: { _eq: false } }
+    ) {
+      affected_rows
+    }
+  }
+`;
+```
+
+Use the `useMutation` React hook and update the `clearCompleted` function as below:
+
+```js
+const [clearCompletedTodos] = useMutation(CLEAR_COMPLETED);
+const clearCompleted = () => {
+  clearCompletedTodos({
+    optimisticResponse: true,
+    update: (cache, { data }) => {
+      const existingTodos = cache.readQuery({ query: GET_MY_TODOS });
+      const newTodos = existingTodos.todos.filter((t) => !t.is_completed);
+      cache.writeQuery({ query: GET_MY_TODOS, data: { todos: newTodos } });
+    },
+  });
+};
+```
+
+That's a wrap of the basic todo app.
+
 # Subscriptions to show online users
 
 ## Apollo useSubscription React hook
