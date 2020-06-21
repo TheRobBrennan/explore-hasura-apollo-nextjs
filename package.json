@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/TheRobBrennan/explore-hasura-apollo-nextjs/issues"
   },
-  "homepage": "https://github.com/TheRobBrennan/explore-hasura-apollo-nextjs#readme"
+  "homepage": "https://github.com/TheRobBrennan/explore-hasura-apollo-nextjs#readme",
+  "devDependencies": {
+    "hasura-cli": "^1.2.2"
+  }
 }
