@@ -531,7 +531,6 @@ Add the following rule to add our custom JWT claims under `hasura-jwt-claim`:
 function (user, context, callback) {
   const namespace = "https://hasura.io/jwt/claims";
 
-  // NOTE: Previous examples referred to context.idToken[namespace]...Is this an error?
   context.accessToken[namespace] =
     {
       'x-hasura-default-role': 'user',
@@ -575,7 +574,7 @@ function (user, context, callback) {
 
   // Modify with your Hasura admin secret and URL to the application
   const admin_secret = "demo";
-  const url = "https://demo-explore-hasura-apollo-nextjs.us.auth0.com/v1/graphql";
+  const url = "https://explore-hasura-apollo-nextjs.herokuapp.com/v1/graphql";
 
   // Define your GraphQL mutation and query variables object
   const query = `mutation($userId: String!, $nickname: String) {
@@ -585,14 +584,14 @@ function (user, context, callback) {
     ) {
       affected_rows
     }
-  }`
+  }`;
   const variables = { "userId": userId, "nickname": nickname };
 
   request.post({
       url: url,
       headers: {'content-type' : 'application/json', 'x-hasura-admin-secret': admin_secret},
       body: JSON.stringify({
-        query: mutation,
+        query: query,
         variables: variables
       })
   }, function(error, response, body){
@@ -935,11 +934,209 @@ That's it. Our Next.js app is now configured with Apollo Client to talk to Hasur
 
 # Queries
 
+Let's integrate a GraphQL query to show the user their personal task list. We will learn the following concepts:
+
+- Fetching data with queries
+- Using the `useQuery` hook
+- Handle loading/error state
+
+Let's get started!
+
 ## Fetch todos - query
+
+The first graphql query you will write will be to fetch personal todos. You will need to load the todo data from the database which belongs to the logged in user. Let's define a graphql query to fetch the required data.
+
+```gql
+query getMyTodos {
+  todos(where: { is_public: { _eq: false } }, order_by: { created_at: desc }) {
+    id
+    title
+    created_at
+    is_completed
+  }
+}
+```
+
+Try this query in Hasura Console against the application database to see what the response looks like.
+
+Note: You need to pass the Authorization: Bearer <token> header before querying to get the results.
+
+This query is the actual graphql query that we will be using in our Next.js app and hence test this out to make sure it works as expected.
+
+Let's now integrate this graphql query into our app.
 
 ## useQuery hook
 
+In this section, we will implement GraphQL Queries and integrate with the react UI. With Apollo Client, you can send queries in 2 different ways.
+
+1. Using the `query` method directly and then process the response.
+2. New `useQuery` React hook with React. (Recommended)
+
+### Apollo useQuery React Hook
+
+The recommended method is to use the useQuery React hook, where you will just pass your GraphQL query and useQuery React hook will fetch the data automatically.
+
+Great! Now let's define the graphql query to be used:
+
+Open components/Todo/TodoPrivateList.js and add the following code:
+
+```js
+import React, { useState, Fragment } from "react";
++ import gql from 'graphql-tag';
+
+import TodoItem from "./TodoItem";
+import TodoFilters from "./TodoFilters";
++ const GET_MY_TODOS = gql`
++  query getMyTodos {
++    todos(where: { is_public: { _eq: false} }, order_by: { created_at: desc }) {
++      id
++      title
++      created_at
++      is_completed
++  }
++ }`;
+```
+
+We have now written the graphql query as a javascript constant using the `gql` parser function. This function is used to parse the plain string as a graphql query.
+
+### What does this query do?
+
+The query fetches todos with a simple condition; `is_public` must be false. We sort the todos descending by its `created_at` time according to the schema. We specify which fields we need for the todos node.
+
+The query is now ready, let's integrate it with our react code:
+
+```js
+import { useQuery } from "@apollo/react-hooks";
+```
+
+`useQuery` React hook is being imported from `@apollo/react-hooks`
+
+```js
+const TodoPrivateListQuery = () => {
+  const { loading, error, data } = useQuery(GET_MY_TODOS);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  if (error) {
+    console.error(error);
+    return <div>Error!</div>;
+  }
+  return <TodoPrivateList todos={data.todos} />;
+};
+```
+
+Remember that we wrapped our App component with `<ApolloProvider>` and passed `client` as a prop. `useQuery` React hook is using the same client.
+
+We are importing the `useQuery` React hook from `@apollo/react-hooks` and the graphql query we defined above to fetch the todo data.
+
+Let's remove the mock `todos` data which was used to populate sample data:
+
+```js
+
+const TodoPrivateList = props => {
+  const [state, setState] = useState({
+    filter: "all",
+    clearInProgress: false,
+-    todos: [
+-      {
+-        id: "1",
+-        title: "This is private todo 1",
+-        is_completed: true,
+-        is_public: false
+-      },
+-      {
+-        id: "2",
+-        title: "This is private todo 2",
+-        is_completed: false,
+-        is_public: false
+-      }
+-    ]
+  });
+  const filterResults = filter => {
+    setState({
+      ...state,
+      filter: filter
+    });
+  };
+  const clearCompleted = () => {};
+-    let filteredTodos = state.todos;
++    const {todos} = props;
++
++    let filteredTodos = todos;
+    if (state.filter === "active") {
+-     filteredTodos = state.todos.filter(todo => todo.is_completed !== true);
++     filteredTodos = todos.filter(todo => todo.is_completed !== true);
+    } else if (state.filter === "completed") {
+-     filteredTodos = state.todos.filter(todo => todo.is_completed === true);
++     filteredTodos = todos.filter(todo => todo.is_completed === true);
+    }
+    const todoList = [];
+    filteredTodos.forEach((todo, index) => {
+      todoList.push(<TodoItem key={index} index={index} todo={todo} />);
+    });
+    return (
+      ...
+    );
+
+};
+```
+
+Finally, update the exports:
+
+```js
+ export default TodoPrivateList;
++ export default TodoPrivateListQuery;
++ export {GET_MY_TODOS};
+```
+
+Woot! You have written your first GraphQL integration with React. Easy isn't it?
+
+### How does this work?
+
+When you use the `useQuery` React hook, Apollo returns the data along with other properties. Most important ones are:
+
+- `loading`: A boolean that indicates whether the request is in flight. If loading is true, then the request hasn't finished. Typically this information can be used to display a loading spinner.
+
+- `error`: A runtime error with graphQLErrors and networkError properties. Contains information about what went wrong with your query.
+
+- `data`: An object containing the result of your GraphQL query. This will contain our actual data from the server. In our case, it will be the todo data.
+
+You can read more about other properties that result object contains here
+
+Using the `data` property, we are parsing the results from the server. In our query, `data` property has an array `todos` which can be mapped over to render each `TodoItem`.
+
+If you noted, there has been some client side filtering to the todos that are displayed.
+
 ## Handle loading/errors
+
+As we saw in the previous step, Apollo returned a result object with properties . Among them `loading` and `error` are common ones that you will need to handle in your app.
+
+Now let's go back to the `useQuery` React hook that you wrote in the previous step:
+
+```js
+const TodoPrivateListQuery = () => {
+  const { loading, error, data } = useQuery(GET_MY_TODOS);
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  if (error) {
+    console.error(error);
+    return <div>Error!</div>;
+  }
+  return <TodoPrivateList todos={data.todos} />;
+};
+```
+
+### Apollo Query Loading State
+
+When this component mounts, the GraphQL query sent in the background may not have been completed. But we need to handle that temporary state of no data and hence we return some useful text during `loading` state. In this loading state, typically you can do fancy things like displaying a loading spinner.
+
+### Apollo Query Error State
+
+Now, the query could also end up in an `error` state due to various reasons. Sometimes the graphql query could be wrong, or the server isn't responding. Whatever may be the reason, the user facing UI should show something to convey that an error has occurred. In this error state, typically you can send these error messages to third-party services to track what went wrong.
+
+All said and done, these are two important states that need to be handled inside your component. What you have written above is basic, but sufficient for this tutorial.
 
 # Mutations & Query variables
 
