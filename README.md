@@ -1603,6 +1603,68 @@ One thing to note, subscriptions are just listeners, they don’t request any da
 
 ## Create Subscription and Render Result
 
+So let's define the graphql subscription to be used.
+
+Open `components/OnlineUsers/OnlineUsersWrapper.js` and make sure your imports are updated to contain:
+
+```js
+import React, { useEffect, Fragment, useState } from "react";
+import { useMutation, useSubscription } from "@apollo/react-hooks";
+```
+
+We are importing the `useSubscription` React hook from `@apollo/react-hooks` and the graphql subscription query we defined above to fetch the online user data.
+
+Now, we will use the `useSubscription` React hook passing the subscription query:
+
+```js
+const { loading, error, data } = useSubscription(
+  gql`
+    subscription getOnlineUsers {
+      online_users(order_by: { user: { name: asc } }) {
+        id
+        user {
+          name
+        }
+      }
+    }
+  `
+);
+
+if (loading) {
+  return <span>Loading...</span>;
+}
+if (error) {
+  console.error(error);
+  return <span>Error!</span>;
+}
+if (data) {
+  onlineUsersList = data.online_users.map((u) => (
+    <OnlineUser key={u.id} user={u.user} />
+  ));
+}
+
+return (
+  <div className="onlineUsersWrapper">
+    <Fragment>
+      <div className="sliderHeader">
+        Online users - {onlineUsersList.length}
+      </div>
+      {onlineUsersList}
+    </Fragment>
+  </div>
+);
+```
+
+Please see `app-boilerplate/components/OnlineUsers/OnlineUsersWrapper.js` for how this was implemented, and for how we removed the mock placeholder state and content.
+
+### How does this work?
+
+We are using the `useSubscription` React hook which returns properties (similar to `useQuery` and `useMutation` React hooks). The `data` property gives the result of the realtime data for the query we have made.
+
+Refresh your app and see yourself online! Don't be surprised; There could be other users online as well.
+
+Awesome! You have completed basic implementations of a GraphQL Query, Mutation and Subscriptions. Easy isn't it?
+
 # Realtime Feed
 
 ## Fetch public todos - subscription
