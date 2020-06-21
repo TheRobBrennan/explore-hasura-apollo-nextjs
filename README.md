@@ -1770,4 +1770,27 @@ Update loadNew() method.
 
 # Deployment
 
-# What next?
+When deploying this example to `Vercel` you'll want to update the `vercel.json` configuration file:
+
+```json
+{
+  "build": {
+    "env": {
+      "DOMAIN": "",
+      "AUTH0_DOMAIN": "@ehan-auth0-domain",
+      "AUTH0_AUDIENCE": "@ehan-auth0-audience",
+      "AUTH0_CLIENT_ID": "@ehan-auth0-client-id",
+      "AUTH0_CLIENT_SECRET": "@ehan-auth0-client-secret",
+      "REDIRECT_URI": "@ehan-redirect-uri",
+      "POST_LOGOUT_REDIRECT_URI": "@ehan-post-logout-redirect-uri",
+      "SESSION_COOKIE_SECRET": "@ehan-session-cookie-secret"
+    }
+  }
+}
+```
+
+Some of these values are settings and can just be added to your repository if you want. Others are actual [secrets](https://vercel.com/docs/cli?query=secrets#commands/secrets) and need to be created as such using the [Vercel CLI](https://vercel.com/docs/cli?query=secrets#introduction/vercel-cli-reference).
+
+Pages that use Server-Side Rendering and API routes will automatically become isolated Serverless Functions. This allows page rendering and API requests to scale infinitely.
+
+Refer to [Vercel CLI documentation](https://vercel.com/docs/cli#getting-started) for more options on configuring custom domains.

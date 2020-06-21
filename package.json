@@ -9,6 +9,10 @@
   ],
   "author": "Rob Brennan <rob@therobbrennan.com> (therobbrennan.com)",
   "license": "ISC",
+  "scripts": {
+    "deploy": "vercel",
+    "deploy:prod": "vercel --prod"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TheRobBrennan/explore-hasura-apollo-nextjs.git"
@@ -18,6 +22,7 @@
   },
   "homepage": "https://github.com/TheRobBrennan/explore-hasura-apollo-nextjs#readme",
   "devDependencies": {
-    "hasura-cli": "^1.2.2"
+    "hasura-cli": "^1.2.2",
+    "vercel": "^19.1.1"
   }
 }
