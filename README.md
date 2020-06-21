@@ -1506,6 +1506,26 @@ const removeTodo = (e) => {
 
 ## Bulk delete todos - mutation
 
+In this part of the tutorial, you will learn how to bulk delete all the existing completed todos by using GraphQL Mutations.
+
+Let's define a graphql query to do a mutation into todos:
+
+```gql
+mutation clearCompleted {
+  delete_todos(
+    where: { is_completed: { _eq: true }, is_public: { _eq: false } }
+  ) {
+    affected_rows
+  }
+}
+```
+
+You will also need to pass in the values for the variables.
+
+Try this mutation in GraphiQL against the application database to see what the response looks like.
+
+Let's now integrate this graphql mutation into our app.
+
 ## Mutation and update cache
 
 # Subscriptions to show online users
