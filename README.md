@@ -1335,17 +1335,233 @@ const resetInput = () => {
 
 # Optimistic UI
 
+We can notice that there is a lag when users create a todo. We can also create UIs where the UI updates optimistically, assuming that the mutation will be successful.
+
+To enable toggling between completed states, and to delete todos let's use optimistic updates when we run mutations!
+
+We will learn the following concepts:
+
+- Creating a GraphQL mutation
+- Using the `useMutation` React hook
+- Integrating Optimistic UI Updates
+- Capturing loading/finished/error states
+
+Let's get started!
+
 ## Update todos - mutation
 
+In this part of the tutorial, you will learn how to mark an existing todo as completed by using GraphQL Mutations.
+
+Let's define a graphql query to do a mutation into todos:
+
+```gql
+mutation toggleTodo($id: Int!, $isCompleted: Boolean!) {
+  update_todos(
+    where: { id: { _eq: $id } }
+    _set: { is_completed: $isCompleted }
+  ) {
+    affected_rows
+  }
+}
+```
+
+You will also need to pass in the values for the variables.
+
+Try this mutation in GraphiQL against the application database to see what the response looks like.
+
+Let's now integrate this graphql mutation into our app.
+
 ## Mutation and update cache
+
+Now let's do the integration part. Open `components/Todo/TodoItem.js` and add the following code below the other imports:
+
+```js
+import gql from "graphql-tag";
+```
+
+Let's define the graphql mutation to update the completed status of the todo:
+
+```js
+const TOGGLE_TODO = gql`
+  mutation toggleTodo($id: Int!, $isCompleted: Boolean!) {
+    update_todos(
+      where: { id: { _eq: $id } }
+      _set: { is_completed: $isCompleted }
+    ) {
+      affected_rows
+    }
+  }
+`;
+```
+
+### Apollo useMutation React Hook
+
+We need to use `useMutation` React hook to make the mutation:
+
+```js
+import { useMutation } from "@apollo/react-hooks";
+```
+
+We already have the onChange handler toggleTodo for the input. Let's update the function to make a use of `toggleTodoMutation` mutate function.
+
+```js
+const [toggleTodoMutation] = useMutation(TOGGLE_TODO);
+const toggleTodo = () => {
+  toggleTodoMutation({
+    variables: { id: todo.id, isCompleted: !todo.is_completed },
+    optimisticResponse: true,
+  });
+};
+```
+
+The above code will just make a mutation, updating the todo's is_completed property in the database. To update the cache, we will be using the `update` function again to modify the cache. We need to fetch the current list of todos from the cache before modifying it. So let's import the query:
+
+```js
+import { GET_MY_TODOS } from "./TodoPrivateList";
+```
+
+Now let's add the code for update function:
+
+```js
+const [toggleTodoMutation] = useMutation(TOGGLE_TODO);
+const toggleTodo = () => {
+  toggleTodoMutation({
+    variables: { id: todo.id, isCompleted: !todo.is_completed },
+    optimisticResponse: true,
+    update: (cache) => {
+      const existingTodos = cache.readQuery({ query: GET_MY_TODOS });
+      const newTodos = existingTodos.todos.map((t) => {
+        if (t.id === todo.id) {
+          return { ...t, is_completed: !t.is_completed };
+        } else {
+          return t;
+        }
+      });
+      cache.writeQuery({
+        query: GET_MY_TODOS,
+        data: { todos: newTodos },
+      });
+    },
+  });
+};
+```
+
+We are fetching the existing todos from the cache using `cache.readQuery` and updating the `is_completed` value for the todo that has been updated.
+
+Finally we are writing the updated todo list to the cache using `cache.writeQuery`.
 
 ## Remove todos - mutation
 
+In this part of the tutorial, you will learn how to remove existing todos by using GraphQL Mutations.
+
+Let's define a graphql query to do a mutation into todos:
+
+```gql
+mutation removeTodo($id: Int!) {
+  delete_todos(where: { id: { _eq: $id } }) {
+    affected_rows
+  }
+}
+```
+
+Try this mutation in GraphiQL against the application database to see what the response looks like. You will also need to pass in the values for the variables.
+
+Let's now integrate this graphql mutation into our app.
+
 ## Mutation and update cache
+
+Now let's do the integration part. Open `components/Todo/TodoItem.js` and add the following code to define the delete mutation:
+
+```js
+const REMOVE_TODO = gql`
+  mutation removeTodo($id: Int!) {
+    delete_todos(where: { id: { _eq: $id } }) {
+      affected_rows
+    }
+  }
+`;
+const [removeTodoMutation] = useMutation(REMOVE_TODO);
+```
+
+We have a function defined to handle the button click to remove a todo. Let's update the function to use `removeTodoMutation` mutate function:
+
+```js
+const removeTodo = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  removeTodoMutation({
+    variables: { id: todo.id },
+    optimisticResponse: true,
+    update: (cache) => {
+      const existingTodos = cache.readQuery({ query: GET_MY_TODOS });
+      const newTodos = existingTodos.todos.filter((t) => t.id !== todo.id);
+      cache.writeQuery({
+        query: GET_MY_TODOS,
+        data: { todos: newTodos },
+      });
+    },
+  });
+};
+```
 
 ## Bulk delete todos - mutation
 
+In this part of the tutorial, you will learn how to bulk delete all the existing completed todos by using GraphQL Mutations.
+
+Let's define a graphql query to do a mutation into todos:
+
+```gql
+mutation clearCompleted {
+  delete_todos(
+    where: { is_completed: { _eq: true }, is_public: { _eq: false } }
+  ) {
+    affected_rows
+  }
+}
+```
+
+You will also need to pass in the values for the variables.
+
+Try this mutation in GraphiQL against the application database to see what the response looks like.
+
+Let's now integrate this graphql mutation into our app.
+
 ## Mutation and update cache
+
+Open components `/Todo/TodoPrivateList.js` and import `useMutation` React hook and add the bulk delete mutation:
+
+```js
+import { useQuery, useMutation } from "@apollo/react-hooks";
+
+// Remove all the todos that are completed
+export const CLEAR_COMPLETED = gql`
+  mutation clearCompleted {
+    delete_todos(
+      where: { is_completed: { _eq: true }, is_public: { _eq: false } }
+    ) {
+      affected_rows
+    }
+  }
+`;
+```
+
+Use the `useMutation` React hook and update the `clearCompleted` function as below:
+
+```js
+const [clearCompletedTodos] = useMutation(CLEAR_COMPLETED);
+const clearCompleted = () => {
+  clearCompletedTodos({
+    optimisticResponse: true,
+    update: (cache, { data }) => {
+      const existingTodos = cache.readQuery({ query: GET_MY_TODOS });
+      const newTodos = existingTodos.todos.filter((t) => !t.is_completed);
+      cache.writeQuery({ query: GET_MY_TODOS, data: { todos: newTodos } });
+    },
+  });
+};
+```
+
+That's a wrap of the basic todo app.
 
 # Subscriptions to show online users
 
