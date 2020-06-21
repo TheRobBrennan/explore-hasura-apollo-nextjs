@@ -1180,6 +1180,38 @@ Let's now integrate this graphql mutation into our app.
 
 ## Query Variables
 
+### What is a variable in GraphQL context?
+
+GraphQL has a first-class way to factor dynamic values out of the query, and pass them as a separate dictionary. These values are called variables. In our case, we are defining the object to be inserted as a mutation.
+
+So let's define the graphql mutation to be used.
+
+Open components/Todo/TodoInput.js and add the following code:
+
+```js
+import gql from "graphql-tag";
+
+export const ADD_TODO = gql`
+  mutation($todo: String!, $isPublic: Boolean!) {
+    insert_todos(objects: { title: $todo, is_public: $isPublic }) {
+      affected_rows
+      returning {
+        id
+        title
+        created_at
+        is_completed
+      }
+    }
+  }
+`;
+```
+
+### What does this mutation do?
+
+The mutation inserts into todos table with the \$objects variable being passed as one todo type.
+
+Awesome! We have defined our first graphql mutation.
+
 ## useMutation Hook, Update Cache
 
 # Optimistic UI
