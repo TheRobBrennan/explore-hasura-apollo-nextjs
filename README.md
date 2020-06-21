@@ -1094,6 +1094,20 @@ Woot! You have written your first GraphQL integration with React. Easy isn't it?
 
 ### How does this work?
 
+When you use the `useQuery` React hook, Apollo returns the data along with other properties. Most important ones are:
+
+- `loading`: A boolean that indicates whether the request is in flight. If loading is true, then the request hasn't finished. Typically this information can be used to display a loading spinner.
+
+- `error`: A runtime error with graphQLErrors and networkError properties. Contains information about what went wrong with your query.
+
+- `data`: An object containing the result of your GraphQL query. This will contain our actual data from the server. In our case, it will be the todo data.
+
+You can read more about other properties that result object contains here
+
+Using the `data` property, we are parsing the results from the server. In our query, `data` property has an array `todos` which can be mapped over to render each `TodoItem`.
+
+If you noted, there has been some client side filtering to the todos that are displayed.
+
 ## Handle loading/errors
 
 # Mutations & Query variables
