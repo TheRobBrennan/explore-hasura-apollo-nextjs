@@ -531,7 +531,7 @@ Add the following rule to add our custom JWT claims under `hasura-jwt-claim`:
 function (user, context, callback) {
   const namespace = "https://hasura.io/jwt/claims";
 
-  context.idToken[namespace] =
+  context.accessToken[namespace] =
     {
       'x-hasura-default-role': 'user',
       // do some custom logic to decide allowed roles
@@ -966,6 +966,133 @@ This query is the actual graphql query that we will be using in our Next.js app 
 Let's now integrate this graphql query into our app.
 
 ## useQuery hook
+
+In this section, we will implement GraphQL Queries and integrate with the react UI. With Apollo Client, you can send queries in 2 different ways.
+
+1. Using the `query` method directly and then process the response.
+2. New `useQuery` React hook with React. (Recommended)
+
+### Apollo useQuery React Hook
+
+The recommended method is to use the useQuery React hook, where you will just pass your GraphQL query and useQuery React hook will fetch the data automatically.
+
+Great! Now let's define the graphql query to be used:
+
+Open components/Todo/TodoPrivateList.js and add the following code:
+
+```js
+import React, { useState, Fragment } from "react";
++ import gql from 'graphql-tag';
+
+import TodoItem from "./TodoItem";
+import TodoFilters from "./TodoFilters";
++ const GET_MY_TODOS = gql`
++  query getMyTodos {
++    todos(where: { is_public: { _eq: false} }, order_by: { created_at: desc }) {
++      id
++      title
++      created_at
++      is_completed
++  }
++ }`;
+```
+
+We have now written the graphql query as a javascript constant using the `gql` parser function. This function is used to parse the plain string as a graphql query.
+
+### What does this query do?
+
+The query fetches todos with a simple condition; `is_public` must be false. We sort the todos descending by its `created_at` time according to the schema. We specify which fields we need for the todos node.
+
+The query is now ready, let's integrate it with our react code:
+
+```js
+import { useQuery } from "@apollo/react-hooks";
+```
+
+`useQuery` React hook is being imported from `@apollo/react-hooks`
+
+```js
+const TodoPrivateListQuery = () => {
+  const { loading, error, data } = useQuery(GET_MY_TODOS);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  if (error) {
+    console.error(error);
+    return <div>Error!</div>;
+  }
+  return <TodoPrivateList todos={data.todos} />;
+};
+```
+
+Remember that we wrapped our App component with `<ApolloProvider>` and passed `client` as a prop. `useQuery` React hook is using the same client.
+
+We are importing the `useQuery` React hook from `@apollo/react-hooks` and the graphql query we defined above to fetch the todo data.
+
+Let's remove the mock `todos` data which was used to populate sample data:
+
+```js
+
+const TodoPrivateList = props => {
+  const [state, setState] = useState({
+    filter: "all",
+    clearInProgress: false,
+-    todos: [
+-      {
+-        id: "1",
+-        title: "This is private todo 1",
+-        is_completed: true,
+-        is_public: false
+-      },
+-      {
+-        id: "2",
+-        title: "This is private todo 2",
+-        is_completed: false,
+-        is_public: false
+-      }
+-    ]
+  });
+  const filterResults = filter => {
+    setState({
+      ...state,
+      filter: filter
+    });
+  };
+  const clearCompleted = () => {};
+-    let filteredTodos = state.todos;
++    const {todos} = props;
++
++    let filteredTodos = todos;
+    if (state.filter === "active") {
+-     filteredTodos = state.todos.filter(todo => todo.is_completed !== true);
++     filteredTodos = todos.filter(todo => todo.is_completed !== true);
+    } else if (state.filter === "completed") {
+-     filteredTodos = state.todos.filter(todo => todo.is_completed === true);
++     filteredTodos = todos.filter(todo => todo.is_completed === true);
+    }
+    const todoList = [];
+    filteredTodos.forEach((todo, index) => {
+      todoList.push(<TodoItem key={index} index={index} todo={todo} />);
+    });
+    return (
+      ...
+    );
+
+};
+```
+
+Finally, update the exports:
+
+```js
+ export default TodoPrivateList;
++ export default TodoPrivateListQuery;
++ export {GET_MY_TODOS};
+```
+
+Woot! You have written your first GraphQL integration with React. Easy isn't it?
+
+### How does this work?
 
 ## Handle loading/errors
 
