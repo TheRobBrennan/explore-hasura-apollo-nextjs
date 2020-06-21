@@ -531,8 +531,7 @@ Add the following rule to add our custom JWT claims under `hasura-jwt-claim`:
 function (user, context, callback) {
   const namespace = "https://hasura.io/jwt/claims";
 
-  // NOTE: Previous examples referred to context.idToken[namespace]...Is this an error?
-  context.accessToken[namespace] =
+  context.idToken[namespace] =
     {
       'x-hasura-default-role': 'user',
       // do some custom logic to decide allowed roles
@@ -575,7 +574,7 @@ function (user, context, callback) {
 
   // Modify with your Hasura admin secret and URL to the application
   const admin_secret = "demo";
-  const url = "https://demo-explore-hasura-apollo-nextjs.us.auth0.com/v1/graphql";
+  const url = "https://explore-hasura-apollo-nextjs.herokuapp.com/v1/graphql";
 
   // Define your GraphQL mutation and query variables object
   const query = `mutation($userId: String!, $nickname: String) {
@@ -585,14 +584,14 @@ function (user, context, callback) {
     ) {
       affected_rows
     }
-  }`
+  }`;
   const variables = { "userId": userId, "nickname": nickname };
 
   request.post({
       url: url,
       headers: {'content-type' : 'application/json', 'x-hasura-admin-secret': admin_secret},
       body: JSON.stringify({
-        query: mutation,
+        query: query,
         variables: variables
       })
   }, function(error, response, body){
@@ -944,6 +943,27 @@ Let's integrate a GraphQL query to show the user their personal task list. We wi
 Let's get started!
 
 ## Fetch todos - query
+
+The first graphql query you will write will be to fetch personal todos. You will need to load the todo data from the database which belongs to the logged in user. Let's define a graphql query to fetch the required data.
+
+```gql
+query getMyTodos {
+  todos(where: { is_public: { _eq: false } }, order_by: { created_at: desc }) {
+    id
+    title
+    created_at
+    is_completed
+  }
+}
+```
+
+Try this query in Hasura Console against the application database to see what the response looks like.
+
+Note: You need to pass the Authorization: Bearer <token> header before querying to get the results.
+
+This query is the actual graphql query that we will be using in our Next.js app and hence test this out to make sure it works as expected.
+
+Let's now integrate this graphql query into our app.
 
 ## useQuery hook
 
