@@ -1214,6 +1214,96 @@ Awesome! We have defined our first graphql mutation.
 
 ## useMutation Hook, Update Cache
 
+### Apollo useMutation React Hook
+
+Now let's do the integration part. Open components/Todo/TodoInput.js and add the following code below the other imports:
+
+```js
+import { useMutation } from "@apollo/react-hooks";
+```
+
+We are importing the `useMutation` React hook from `@apollo/react-hooks` and the graphql query we defined above to fetch the todo data.
+
+Now, we will use the `useMutation` React hook passing our graphql mutation constant that we imported. Add the following code:
+
+```js
+const [addTodo] = useMutation(ADD_TODO);
+```
+
+In the `useMutation` React hook defined above, the first argument of the result tuple is the mutate function; (addTodo) in this case. Read more about the mutate function [here](https://www.apollographql.com/docs/react/essentials/mutations/#result)
+
+The mutate function optionally takes variables, optimisticResponse, refetchQueries, and update; You are going to make use of the `update` function later.
+
+We need to handle the change event so that when the user types something on the input box, we update the state.
+
+We are going to make use of `useState` hook for this:
+
+```js
+import React, { useState } from "react";
+```
+
+We will initialise the state and add an onChange handler to update the state. Next, let's handle the form submit to invoke the mutation:
+
+```js
+const TodoInput = ({ isPublic = false }) => {
+  let input;
+  const [todoInput, setTodoInput] = useState("");
+  const [addTodo] = useMutation(ADD_TODO); // The first argument - addTodo - is the mutate function itself
+
+  return (
+    <form
+      className="formInput"
+      onSubmit={(e) => {
+        e.preventDefault();
+        addTodo({ variables: { todo: todoInput, isPublic } });
+      }}
+    >
+      <input
+        className="input"
+        placeholder="What needs to be done?"
+        value={todoInput}
+        onChange={(e) => setTodoInput(e.target.value)}
+        ref={(n) => (input = n)}
+      />
+      <i className="inputMarker fa fa-angle-right" />
+    </form>
+  );
+};
+```
+
+We are passing the mutate function (`addTodo`) to our form submit handler. The mutate function's first argument would be the mutation query's options, such as variables etc. We are now passing the variables required for the mutation.
+
+The mutation has been integrated and the new todos will be inserted into the database. But the UI doesn't know that a new todo has been added. We need a way to tell Apollo Client to update the query for the list of todos.
+
+### Apollo React Mutation Update
+
+The `update` function comes in handy to update the cache for this mutation. It comes with utility functions such as `readQuery` and `writeQuery` that helps in reading from and writing to the cache.
+
+Let's implement `update` for the above mutation.
+
+We need to fetch the current list of todos from the cache. So let's import the query that we used in the previous steps.
+
+We pass the update function as an option to `useMutation`.
+
+Let's define the updateCache function to read and write to cache.
+
+To see these changes in context, please refer to `app-boilerplate/components/Todo/TodoInput.js`
+
+Let's dissect what's happening in this code snippet.
+
+Our goals were simple:
+
+- Make a mutation to insert the new todo in the database.
+- Once the mutation is done, we need to update the cache to update the UI.
+
+The update function is used to update the cache after a mutation occurs. It receives the result of the mutation (data) and the current cache (store) as arguments. You will then use these arguments to manage your cache so that the UI will be up to date.
+
+### readQuery and writeQuery
+
+#### cache.readQuery
+
+#### cache.writeQuery
+
 # Optimistic UI
 
 ## Update todos - mutation
