@@ -494,6 +494,33 @@ Great! Now navigate to the heroku app - [https://explore-hasura-apollo-nextjs.he
 
 # Auth0 Setup
 
+## Create Auth0 Application
+
+- Navigate to the [Auth0 Dashboard](https://manage.auth0.com/)
+- Signup / Login to the account
+- Create a new tenant.
+- Click on the `Applications` menu option on the left and then click the `+ Create Application` button.
+- In the Create Application window, set a name for your application and select `Single Page Web Applications`. (Assuming the frontend app will be an SPA built on react/vue etc)
+- In the `settings` of the application, we will add appropriate (e.g: http://localhost:3000/callback) URLs as `Allowed Callback URLs` and `Allowed Web Origins`. We can also add domain specific URLs as well for the app to work. (e.g: https://myapp.com/callback).
+
+This would be the URL of the frontend app which you will deploy later. You can ignore this, for now. You can always come back later and add the necessary URLs.
+
+## Create Auth0 API
+
+We need to create an API on Auth0 so that we can make the accessToken a valid JWT.
+
+![https://graphql-engine-cdn.hasura.io/learn-hasura/assets/graphql-hasura/auth0-api-create.png](https://graphql-engine-cdn.hasura.io/learn-hasura/assets/graphql-hasura/auth0-api-create.png)
+
+Now in the pop-up that appears, give the name of the API and the identifier. We can technically give any value.
+
+Let's say the name is `hasura` and the identifier is `https://hasura.io/learn`.
+
+![https://graphql-engine-cdn.hasura.io/learn-hasura/assets/graphql-hasura/auth0-api-audience.png](https://graphql-engine-cdn.hasura.io/learn-hasura/assets/graphql-hasura/auth0-api-audience.png)
+
+We can let the signing algorithm to be as it is. (RS256)
+
+Click on Create once you are done.
+
 ## Custom Claims in Auth0 Rules
 
 ## Connect Hasura with Auth0
