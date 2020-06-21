@@ -1470,6 +1470,40 @@ Let's now integrate this graphql mutation into our app.
 
 ## Mutation and update cache
 
+Now let's do the integration part. Open `components/Todo/TodoItem.js` and add the following code to define the delete mutation:
+
+```js
+const REMOVE_TODO = gql`
+  mutation removeTodo($id: Int!) {
+    delete_todos(where: { id: { _eq: $id } }) {
+      affected_rows
+    }
+  }
+`;
+const [removeTodoMutation] = useMutation(REMOVE_TODO);
+```
+
+We have a function defined to handle the button click to remove a todo. Let's update the function to use `removeTodoMutation` mutate function:
+
+```js
+const removeTodo = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  removeTodoMutation({
+    variables: { id: todo.id },
+    optimisticResponse: true,
+    update: (cache) => {
+      const existingTodos = cache.readQuery({ query: GET_MY_TODOS });
+      const newTodos = existingTodos.todos.filter((t) => t.id !== todo.id);
+      cache.writeQuery({
+        query: GET_MY_TODOS,
+        data: { todos: newTodos },
+      });
+    },
+  });
+};
+```
+
 ## Bulk delete todos - mutation
 
 ## Mutation and update cache
