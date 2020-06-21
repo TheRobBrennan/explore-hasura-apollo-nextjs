@@ -1140,6 +1140,16 @@ All said and done, these are two important states that need to be handled inside
 
 # Mutations & Query variables
 
+Now, let's add the ability for our users to create new todos and add them to their task list.
+
+We will learn the following concepts:
+
+- Creating a GraphQL mutation
+- Using the `useMutation` React hook
+- Capturing loading/finished/error states
+
+Let's get started!
+
 ## Create todos - mutation
 
 ## Query Variables
