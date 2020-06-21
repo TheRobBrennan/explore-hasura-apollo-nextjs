@@ -1452,6 +1452,22 @@ Finally we are writing the updated todo list to the cache using `cache.writeQuer
 
 ## Remove todos - mutation
 
+In this part of the tutorial, you will learn how to remove existing todos by using GraphQL Mutations.
+
+Let's define a graphql query to do a mutation into todos:
+
+```gql
+mutation removeTodo($id: Int!) {
+  delete_todos(where: { id: { _eq: $id } }) {
+    affected_rows
+  }
+}
+```
+
+Try this mutation in GraphiQL against the application database to see what the response looks like. You will also need to pass in the values for the variables.
+
+Let's now integrate this graphql mutation into our app.
+
 ## Mutation and update cache
 
 ## Bulk delete todos - mutation
