@@ -1565,6 +1565,36 @@ That's a wrap of the basic todo app.
 
 # Subscriptions to show online users
 
+We cruised through our GraphQL queries and mutations. We queried for todos, added a new todo, updated an existing todo, removed an existing todo.
+
+Now let's get to the exciting part.
+
+## GraphQL Subscriptions
+
+We have a section of UI which displays the list of online users. So far we have made queries to fetch data and display them on the UI. But typically online users data is dynamic.
+
+We can make use of GraphQL Subscription API to get realtime data from the graphql server to efficiently handle this.
+
+But but but...
+
+We need to tell the server that the user who is logged in is online. We have to poll our server to do a mutation which updates the last_seen timestamp value of the user.
+
+We have to make this change to see yourself online first. Remember that you are already logged in, registered your data in the server, but not updated your last_seen value.?
+
+The goal is to update every few seconds from the client that you are online. Ideally you should do this after you have successfully authenticated with Auth0. So let's update some code to handle this.
+
+Open `components/OnlineUsers/OnlineUsersWrapper.js` and add the following imports:
+
+```js
+import React, { useEffect, useState } from "react";
+import { useMutation } from "@apollo/react-hooks";
+import gql from "graphql-tag";
+```
+
+In `useEffect`, we will create a `setInterval` to update the `last_seen` of the user every 30 seconds.
+
+Now let's write the definition of the `updateLastSeen`.
+
 ## Apollo useSubscription React hook
 
 ## Create Subscription and Render Result
