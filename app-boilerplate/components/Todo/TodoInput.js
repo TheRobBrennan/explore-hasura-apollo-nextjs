@@ -40,7 +40,15 @@ const TodoInput = ({ isPublic = false }) => {
     });
   };
 
-  const [addTodo] = useMutation(ADD_TODO, { update: updateCache }); // The first argument - addTodo - is the mutate function itself
+  const resetInput = () => {
+    setTodoInput("");
+  };
+
+  // The first argument - addTodo - is the mutate function itself
+  const [addTodo] = useMutation(ADD_TODO, {
+    update: updateCache,
+    onCompleted: resetInput,
+  });
 
   return (
     <form
