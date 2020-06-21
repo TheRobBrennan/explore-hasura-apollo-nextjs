@@ -648,6 +648,23 @@ This is what you should see after the steps above:
 
 # Configure Apollo Client with Next.js
 
+Apollo gives a neat abstraction layer and an interface to your GraphQL server. You don't need to worry about constructing your queries with request body, headers and options, that you might have done with `axios` or `fetch` say. You can directly write queries and mutations in GraphQL and they will automatically be sent to your server via your apollo client instance.
+
+## React Apollo Hooks Installation
+
+Let's get started by installing apollo client & peer graphql dependencies:
+
+```sh
+# Make sure you are in the app-boilerplate directory
+$ npm i apollo-boost @apollo/react-hooks graphql apollo-link-ws subscriptions-transport-ws
+```
+
+## Create Apollo Client Instance
+
+## HttpLink and InMemoryCache
+
+## WebSocketLink and Client Side
+
 # Queries
 
 ## Fetch todos - query
