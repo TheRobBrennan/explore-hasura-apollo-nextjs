@@ -1302,7 +1302,36 @@ The update function is used to update the cache after a mutation occurs. It rece
 
 #### cache.readQuery
 
+Unlike `client.query`, readQuery will never make a request to your GraphQL server. It will always read from the cache. So we make a read request to the cache to get the current list of todos.
+
 #### cache.writeQuery
+
+We have already done the mutation to the graphql server using the mutate function. Our goal was to update the UI. This is where writeQuery comes to the rescue. writeQuery will allow you to change data in your local cache, but it is important to remember that they will not change any data on your server (exactly what we need).
+
+Any subscriber to the Apollo Client store will instantly see this update and render new UI accordingly.
+
+We concatenate our new todo from our mutation with the list of existing todos and write the query back to the cache with cache.writeQuery
+
+Now, the TodoPrivateList component using the useQuery React hook will get the updated todo list as it is automatically subscribed to the store.
+
+Great! That was actually easy :)
+
+Let's wrap this by adding a function to clear the input value once the mutation is successful:
+
+```js
+const [addTodo] = useMutation(ADD_TODO, {
+  update: updateCache,
+  onCompleted: resetInput,
+});
+```
+
+We pass a function called `resetInput` to the `onCompleted` option which will be called once the mutation is completed. The function definition looks like this:
+
+```js
+const resetInput = () => {
+  setTodoInput("");
+};
+```
 
 # Optimistic UI
 
