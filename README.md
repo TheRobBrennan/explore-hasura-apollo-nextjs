@@ -1565,9 +1565,105 @@ That's a wrap of the basic todo app.
 
 # Subscriptions to show online users
 
+We cruised through our GraphQL queries and mutations. We queried for todos, added a new todo, updated an existing todo, removed an existing todo.
+
+Now let's get to the exciting part.
+
+## GraphQL Subscriptions
+
+We have a section of UI which displays the list of online users. So far we have made queries to fetch data and display them on the UI. But typically online users data is dynamic.
+
+We can make use of GraphQL Subscription API to get realtime data from the graphql server to efficiently handle this.
+
+But but but...
+
+We need to tell the server that the user who is logged in is online. We have to poll our server to do a mutation which updates the last_seen timestamp value of the user.
+
+We have to make this change to see yourself online first. Remember that you are already logged in, registered your data in the server, but not updated your last_seen value.?
+
+The goal is to update every few seconds from the client that you are online. Ideally you should do this after you have successfully authenticated with Auth0. So let's update some code to handle this.
+
+Open `components/OnlineUsers/OnlineUsersWrapper.js` and add the following imports:
+
+```js
+import React, { useEffect, useState } from "react";
+import { useMutation } from "@apollo/react-hooks";
+import gql from "graphql-tag";
+```
+
+In `useEffect`, we will create a `setInterval` to update the `last_seen` of the user every 30 seconds.
+
+Now let's write the definition of the `updateLastSeen`.
+
 ## Apollo useSubscription React hook
 
+The easiest way to bring live data to your UI is using the useSubscription React hook from Apollo React-Hooks. This lets you render the stream of data from your service directly within your render function of your component!
+
+One thing to note, subscriptions are just listeners, they don’t request any data when first connected, but only open up a connection to get new data.
+
 ## Create Subscription and Render Result
+
+So let's define the graphql subscription to be used.
+
+Open `components/OnlineUsers/OnlineUsersWrapper.js` and make sure your imports are updated to contain:
+
+```js
+import React, { useEffect, Fragment, useState } from "react";
+import { useMutation, useSubscription } from "@apollo/react-hooks";
+```
+
+We are importing the `useSubscription` React hook from `@apollo/react-hooks` and the graphql subscription query we defined above to fetch the online user data.
+
+Now, we will use the `useSubscription` React hook passing the subscription query:
+
+```js
+const { loading, error, data } = useSubscription(
+  gql`
+    subscription getOnlineUsers {
+      online_users(order_by: { user: { name: asc } }) {
+        id
+        user {
+          name
+        }
+      }
+    }
+  `
+);
+
+if (loading) {
+  return <span>Loading...</span>;
+}
+if (error) {
+  console.error(error);
+  return <span>Error!</span>;
+}
+if (data) {
+  onlineUsersList = data.online_users.map((u) => (
+    <OnlineUser key={u.id} user={u.user} />
+  ));
+}
+
+return (
+  <div className="onlineUsersWrapper">
+    <Fragment>
+      <div className="sliderHeader">
+        Online users - {onlineUsersList.length}
+      </div>
+      {onlineUsersList}
+    </Fragment>
+  </div>
+);
+```
+
+Please see `app-boilerplate/components/OnlineUsers/OnlineUsersWrapper.js` for how this was implemented, and for how we removed the mock placeholder state and content.
+
+### How does this work?
+
+We are using the `useSubscription` React hook which returns properties (similar to `useQuery` and `useMutation` React hooks). The `data` property gives the result of the realtime data for the query we have made.
+
+Refresh your app and see yourself online! Don't be surprised; There could be other users online as well.
+
+Awesome! You have completed basic implementations of a GraphQL Query, Mutation and Subscriptions. Easy isn't it?
 
 # Realtime Feed
 
